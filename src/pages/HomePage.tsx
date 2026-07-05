@@ -3,10 +3,12 @@
 import { useState, useEffect, useRef, useCallback, memo } from 'react';
 import {
   Play, Search, Info, Star, ChevronLeft, ChevronRight,
-  Home, Compass, Flame, Laugh, Ghost, Heart, Sparkles,
-  Tv, Film, TrendingUp, X, Loader2, Bell, BookOpen, Swords,
+  Flame, Laugh, Ghost, Heart, Sparkles,
+  Tv, Film, TrendingUp, X, Loader2, Swords,
 } from 'lucide-react';
 import { tmdb, getTMDBImage } from '@/lib/tmdb';
+import Navbar from '@/components/Navbar';
+import BottomNav from '@/components/BottomNav';
 
 // ─── NARUTO DESIGN TOKENS ────────────────────────────────────────────────────
 const C = {
@@ -218,106 +220,7 @@ function Rail({
   );
 }
 
-// ─── NAVBAR ───────────────────────────────────────────────────────────────────
-const NAV_LINKS = [
-  { label: 'Home', icon: <Home size={14} /> },
-  { label: 'Browse', icon: <Compass size={14} /> },
-  { label: 'Movies', icon: <Film size={14} /> },
-  { label: 'Series', icon: <BookOpen size={14} /> },
-];
-
-function Navbar({ onSearchOpen }: { onSearchOpen: () => void }) {
-  const [scrolled, setScrolled] = useState(false);
-  const [active, setActive] = useState('Home');
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 30);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-  return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50 }}>
-      <nav style={{
-        display: 'flex', alignItems: 'center', gap: 0,
-        padding: '0 20px',
-        height: 60,
-        background: scrolled ? 'rgba(10,10,15,0.92)' : 'transparent',
-        backdropFilter: scrolled ? 'blur(24px)' : 'none',
-        WebkitBackdropFilter: scrolled ? 'blur(24px)' : 'none',
-        borderBottom: scrolled ? `1px solid ${C.border}` : 'none',
-        transition: 'all 0.3s ease',
-      }}>
-        {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginRight: 32, flexShrink: 0 }}>
-          {/* Konoha-leaf inspired icon */}
-          <div style={{
-            width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: `linear-gradient(135deg, ${C.accent}, #FF4500)`,
-            boxShadow: `0 0 16px ${C.accentGlow}`,
-            fontSize: 14, fontWeight: 900, color: '#fff',
-          }}>忍</div>
-          <span style={{ fontSize: 18, fontWeight: 900, letterSpacing: '-0.04em', fontFamily: '"Outfit", system-ui, sans-serif', color: C.text }}>
-            ANI<span style={{ color: C.accent }}>VERSE</span>
-          </span>
-        </div>
-
-        {/* Nav Links — desktop only */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }} className="av-desktop-nav">
-          {NAV_LINKS.map(link => (
-            <button
-              key={link.label}
-              onClick={() => setActive(link.label)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '7px 14px', borderRadius: 8, border: 'none',
-                background: active === link.label ? C.accentDim : 'transparent',
-                color: active === link.label ? C.accent : C.textSub,
-                fontSize: 13, fontWeight: active === link.label ? 700 : 500,
-                cursor: 'pointer', transition: 'all 0.18s ease',
-              }}
-              onMouseEnter={e => { if (active !== link.label) (e.currentTarget as HTMLButtonElement).style.color = C.text; }}
-              onMouseLeave={e => { if (active !== link.label) (e.currentTarget as HTMLButtonElement).style.color = C.textSub; }}
-            >
-              {link.icon}{link.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Right side actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto' }}>
-          <button
-            onClick={onSearchOpen}
-            style={{
-              width: 36, height: 36, borderRadius: '50%', border: `1px solid ${C.border}`,
-              background: C.accentDim, color: C.accent,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', transition: 'all 0.18s ease',
-            }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = C.accent; (e.currentTarget as HTMLButtonElement).style.color = '#fff'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = C.accentDim; (e.currentTarget as HTMLButtonElement).style.color = C.accent; }}
-          >
-            <Search size={15} />
-          </button>
-          <button style={{
-            width: 36, height: 36, borderRadius: '50%', border: `1px solid ${C.border}`,
-            background: C.elevated, color: C.textSub,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-          }}>
-            <Bell size={15} />
-          </button>
-          {/* Avatar */}
-          <div style={{
-            width: 34, height: 34, borderRadius: '50%', cursor: 'pointer',
-            background: `linear-gradient(135deg, ${C.accent}, #FF4500)`,
-            border: `2px solid ${C.accent}`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 13, fontWeight: 900, color: '#fff',
-            boxShadow: `0 0 12px ${C.accentGlow}`,
-          }}>七</div>
-        </div>
-      </nav>
-    </div>
-  );
-}
+// Navbar and BottomNav are now separate components in src/components/
 
 // ─── HERO ─────────────────────────────────────────────────────────────────────
 function Hero({ items, loading }: { items: AnimeItem[]; loading: boolean }) {
@@ -521,57 +424,7 @@ function SearchOverlay({ onClose, onSelect }: { onClose: () => void; onSelect: (
   );
 }
 
-// ─── BOTTOM NAV BAR (always visible on mobile, fixed) ─────────────────────────
-const BOTTOM_TABS = [
-  { label: 'Home',    icon: <Home size={20} />,    id: 'home' },
-  { label: 'Browse',  icon: <Compass size={20} />, id: 'browse' },
-  { label: 'Battle',  icon: <Swords size={20} />,  id: 'battle' },
-  { label: 'Genres',  icon: <Sparkles size={20} />, id: 'genres' },
-  { label: 'Search',  icon: <Search size={20} />,  id: 'search' },
-];
-
-function BottomNav({ onSearchOpen }: { onSearchOpen: () => void }) {
-  const [active, setActive] = useState('home');
-  return (
-    <nav style={{
-      position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 60,
-      background: 'rgba(10,10,15,0.95)',
-      backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
-      borderTop: `1px solid ${C.border}`,
-      display: 'flex', alignItems: 'stretch',
-      paddingBottom: 'env(safe-area-inset-bottom)',
-    }}>
-      {BOTTOM_TABS.map(tab => {
-        const isActive = active === tab.id;
-        return (
-          <button
-            key={tab.id}
-            onClick={() => { setActive(tab.id); if (tab.id === 'search') onSearchOpen(); }}
-            style={{
-              flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              gap: 4, padding: '10px 0 8px', border: 'none', background: 'transparent',
-              color: isActive ? C.accent : C.textSub,
-              cursor: 'pointer', position: 'relative', transition: 'color 0.18s',
-            }}
-          >
-            {isActive && (
-              <div style={{
-                position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
-                width: 32, height: 2, borderRadius: 999,
-                background: `linear-gradient(90deg, ${C.accent}, #FF4500)`,
-                boxShadow: `0 0 8px ${C.accent}`,
-              }} />
-            )}
-            <div style={{ transform: isActive ? 'scale(1.1)' : 'scale(1)', transition: 'transform 0.18s' }}>
-              {tab.icon}
-            </div>
-            <span style={{ fontSize: 10, fontWeight: isActive ? 700 : 500, letterSpacing: '0.01em' }}>{tab.label}</span>
-          </button>
-        );
-      })}
-    </nav>
-  );
-}
+// BottomNav is now a separate component in src/components/BottomNav.tsx
 
 // ─── SECTION DIVIDER ──────────────────────────────────────────────────────────
 function SectionDivider({ label }: { label: string }) {
