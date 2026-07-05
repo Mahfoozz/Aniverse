@@ -1,6 +1,6 @@
 // src/components/BottomNav.tsx
-import { useState } from 'react';
 import { Home, Compass, Search, Sparkles, Swords } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const C = {
   accent:    '#FF6B00',
@@ -10,11 +10,11 @@ const C = {
 } as const;
 
 const TABS = [
-  { label: 'Home',   icon: <Home size={20} />,    id: 'home' },
-  { label: 'Browse', icon: <Compass size={20} />, id: 'browse' },
-  { label: 'Battle', icon: <Swords size={20} />,  id: 'battle' },
-  { label: 'Genres', icon: <Sparkles size={20} />, id: 'genres' },
-  { label: 'Search', icon: <Search size={20} />,  id: 'search' },
+  { label: 'Home',   icon: <Home size={20} />,    id: 'home',   path: '/' },
+  { label: 'Browse', icon: <Compass size={20} />, id: 'browse', path: '/browse' },
+  { label: 'Battle', icon: <Swords size={20} />,  id: 'battle', path: '/browse?genre=28' },
+  { label: 'Genres', icon: <Sparkles size={20} />, id:'genres', path: '/browse' },
+  { label: 'Search', icon: <Search size={20} />,  id: 'search', path: null },
 ];
 
 interface BottomNavProps {
@@ -22,7 +22,14 @@ interface BottomNavProps {
 }
 
 export default function BottomNav({ onSearchOpen }: BottomNavProps) {
-  const [active, setActive] = useState('home');
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const isActive = (path: string | null) => {
+    if (!path) return false;
+    if (path === '/') return location.pathname === '/';
+    return location.pathname.startsWith(path.split('?')[0]);
+  };
 
   return (
     <nav style={{
@@ -34,19 +41,22 @@ export default function BottomNav({ onSearchOpen }: BottomNavProps) {
       paddingBottom: 'env(safe-area-inset-bottom)',
     }}>
       {TABS.map(tab => {
-        const isActive = active === tab.id;
+        const active = isActive(tab.path);
         return (
           <button
             key={tab.id}
-            onClick={() => { setActive(tab.id); if (tab.id === 'search') onSearchOpen(); }}
+            onClick={() => {
+              if (tab.id === 'search') { onSearchOpen(); return; }
+              if (tab.path) navigate(tab.path);
+            }}
             style={{
               flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               gap: 4, padding: '10px 0 8px', border: 'none', background: 'transparent',
-              color: isActive ? C.accent : C.textSub,
+              color: active ? C.accent : C.textSub,
               cursor: 'pointer', position: 'relative', transition: 'color 0.18s',
             }}
           >
-            {isActive && (
+            {active && (
               <div style={{
                 position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
                 width: 32, height: 2, borderRadius: 999,
@@ -54,10 +64,10 @@ export default function BottomNav({ onSearchOpen }: BottomNavProps) {
                 boxShadow: `0 0 8px ${C.accent}`,
               }} />
             )}
-            <div style={{ transform: isActive ? 'scale(1.1)' : 'scale(1)', transition: 'transform 0.18s' }}>
+            <div style={{ transform: active ? 'scale(1.1)' : 'scale(1)', transition: 'transform 0.18s' }}>
               {tab.icon}
             </div>
-            <span style={{ fontSize: 10, fontWeight: isActive ? 700 : 500, letterSpacing: '0.01em' }}>{tab.label}</span>
+            <span style={{ fontSize: 10, fontWeight: active ? 700 : 500, letterSpacing: '0.01em' }}>{tab.label}</span>
           </button>
         );
       })}

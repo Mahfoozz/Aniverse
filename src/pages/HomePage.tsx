@@ -6,7 +6,7 @@ import {
   Flame, Laugh, Ghost, Heart, Sparkles,
   Tv, Film, TrendingUp, X, Loader2, Swords,
 } from 'lucide-react';
-import { tmdb, getTMDBImage } from '@/lib/tmdb';
+import { tmdb, getTMDBImage, isAnimation } from '@/lib/tmdb';
 import Navbar from '@/components/Navbar';
 import BottomNav from '@/components/BottomNav';
 
@@ -359,8 +359,7 @@ function SearchOverlay({ onClose, onSelect }: { onClose: () => void; onSelect: (
         const data = await tmdb.searchAnime(query.trim());
         const raw: any[] = data?.results || [];
         const filtered = raw.filter(r =>
-          (r.media_type === 'tv' || r.media_type === 'movie') &&
-          (r.original_language === 'ja' || (r.genre_ids || []).includes(16))
+          (r.media_type === 'tv' || r.media_type === 'movie') && isAnimation(r)
         );
         const items = filtered.map(r => normItem(r, r.media_type)).filter(i => i.tmdb_id && i.poster);
         setResults(items);

@@ -1,6 +1,7 @@
 // src/components/Navbar.tsx
 import { useState, useEffect } from 'react';
 import { Search, Bell, Home, Compass, Film, BookOpen } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const C = {
   bg:        '#0A0A0F',
@@ -12,14 +13,13 @@ const C = {
   accentDim: 'rgba(255,107,0,0.18)',
   accentGlow:'rgba(255,107,0,0.35)',
   border:    'rgba(255,107,0,0.12)',
-  borderHov: 'rgba(255,107,0,0.28)',
 } as const;
 
 const NAV_LINKS = [
-  { label: 'Home',   icon: <Home size={14} /> },
-  { label: 'Browse', icon: <Compass size={14} /> },
-  { label: 'Movies', icon: <Film size={14} /> },
-  { label: 'Series', icon: <BookOpen size={14} /> },
+  { label: 'Home',   icon: <Home size={14} />,    path: '/' },
+  { label: 'Browse', icon: <Compass size={14} />, path: '/browse' },
+  { label: 'Movies', icon: <Film size={14} />,    path: '/browse?type=movie' },
+  { label: 'Series', icon: <BookOpen size={14} />,path: '/browse?type=tv' },
 ];
 
 interface NavbarProps {
@@ -28,13 +28,19 @@ interface NavbarProps {
 
 export default function Navbar({ onSearchOpen }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
-  const [active, setActive] = useState('Home');
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  const isActive = (path: string) => {
+    if (path === '/') return location.pathname === '/';
+    return location.pathname.startsWith(path.split('?')[0]);
+  };
 
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50 }}>
@@ -48,7 +54,10 @@ export default function Navbar({ onSearchOpen }: NavbarProps) {
         transition: 'all 0.3s ease',
       }}>
         {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginRight: 32, flexShrink: 0 }}>
+        <div
+          onClick={() => navigate('/')}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, marginRight: 32, flexShrink: 0, cursor: 'pointer' }}
+        >
           <div style={{
             width: 32, height: 32, borderRadius: '50%',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -63,24 +72,27 @@ export default function Navbar({ onSearchOpen }: NavbarProps) {
 
         {/* Nav Links — desktop only */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }} className="av-desktop-nav">
-          {NAV_LINKS.map(link => (
-            <button
-              key={link.label}
-              onClick={() => setActive(link.label)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '7px 14px', borderRadius: 8, border: 'none',
-                background: active === link.label ? C.accentDim : 'transparent',
-                color: active === link.label ? C.accent : C.textSub,
-                fontSize: 13, fontWeight: active === link.label ? 700 : 500,
-                cursor: 'pointer', transition: 'all 0.18s ease',
-              }}
-              onMouseEnter={e => { if (active !== link.label) (e.currentTarget as HTMLButtonElement).style.color = C.text; }}
-              onMouseLeave={e => { if (active !== link.label) (e.currentTarget as HTMLButtonElement).style.color = C.textSub; }}
-            >
-              {link.icon}{link.label}
-            </button>
-          ))}
+          {NAV_LINKS.map(link => {
+            const active = isActive(link.path);
+            return (
+              <button
+                key={link.label}
+                onClick={() => navigate(link.path)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '7px 14px', borderRadius: 8, border: 'none',
+                  background: active ? C.accentDim : 'transparent',
+                  color: active ? C.accent : C.textSub,
+                  fontSize: 13, fontWeight: active ? 700 : 500,
+                  cursor: 'pointer', transition: 'all 0.18s ease',
+                }}
+                onMouseEnter={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.color = C.text; }}
+                onMouseLeave={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.color = C.textSub; }}
+              >
+                {link.icon}{link.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Right actions */}
